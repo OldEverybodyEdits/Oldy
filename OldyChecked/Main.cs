@@ -1,9 +1,7 @@
 ﻿using PlayerIO.GameLibrary;
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 //OldyChecked fixes some of the mistakes that the original Old EE gamecode didn't fix.
 
@@ -22,14 +20,14 @@ namespace OldyChecked
 	/// </summary>
 	public class Config
 	{
-		public int MaxSmilies = 5;
-		public int MinSmilies = 0;
+		public const int MaxSmilies = 5;
+		public const int MinSmilies = 0;
 
-		public int WorldWidth = 100;
-		public int WorldHeight = 100;
+		public const int WorldWidth = 100;
+		public const int WorldHeight = 100;
 
-		public int MaxBlocks = 20;
-		public int MinBlocks = 0;
+		public const int MaxBlocks = 20;
+		public const int MinBlocks = 0;
 	}
 
 	[RoomType("FlixelWalker1")]
@@ -44,7 +42,7 @@ namespace OldyChecked
 		/// <param name="e"></param>
 		private void BroadcastJoined(Message e)
 		{
-			ForEachPlayer(delegate(Player i)
+			ForEachPlayer(delegate (Player i)
 			{
 				if (i.Initiated)
 				{
@@ -53,24 +51,21 @@ namespace OldyChecked
 			});
 		}
 
-		private void BroadcastJoined(string bas, params object[] pms)
-		{
-			BroadcastJoined(Message.Create(bas, pms));
-		}
+		private void BroadcastJoined(string bas, params object[] pms) => BroadcastJoined(Message.Create(bas, pms));
 
 		public override void GameStarted()
 		{
 			cnf = new Config();
 			//We don't check if it's 0x0 or 8x5
 
-			World = new int[cnf.WorldWidth, cnf.WorldHeight];
+			World = new int[Config.WorldWidth, Config.WorldHeight];
 
-			for (int x = 0; x < cnf.WorldWidth; x++)
+			for (int x = 0; x < Config.WorldWidth; x++)
 			{
-				for (int y = 0; y < cnf.WorldHeight; y++)
+				for (int y = 0; y < Config.WorldHeight; y++)
 				{
-					if ((x == 0 || x == cnf.WorldWidth - 1)
-						|| (y == 0 || y == cnf.WorldHeight - 1))
+					if ((x == 0 || x == Config.WorldWidth - 1)
+						|| (y == 0 || y == Config.WorldHeight - 1))
 					{
 						World[x, y] = 5;
 					}
@@ -84,15 +79,9 @@ namespace OldyChecked
 			base.GameStarted();
 		}
 
-		public override void GameClosed()
-		{
-			base.GameClosed();
-		}
+		public override void GameClosed() => base.GameClosed();
 
-		public override void UserJoined(Player player)
-		{
-			base.UserJoined(player);
-		}
+		public override void UserJoined(Player player) => base.UserJoined(player);
 
 		public override void UserLeft(Player player)
 		{
@@ -110,22 +99,22 @@ namespace OldyChecked
 						StringBuilder Serialize = new StringBuilder("");
 
 						//Serialize the world data
-						for (int y = 0; y < cnf.WorldHeight; y++)
+						for (int y = 0; y < Config.WorldHeight; y++)
 						{
 							Serialize.Append(World[0, y].ToString());
-							for (int x = 1; x < cnf.WorldWidth; x++)
+							for (int x = 1; x < Config.WorldWidth; x++)
 							{
 								Serialize.Append(",");
 								Serialize.Append(World[x, y].ToString());
 							}
-							if (y != cnf.WorldHeight - 1)
+							if (y != Config.WorldHeight - 1)
 							{
 								Serialize.Append("\n");
 							}
 						}
 						BroadcastJoined("add", player.Id, 0, 16, 16);
 						player.Send("init", Serialize.ToString(), player.Id);
-						ForEachPlayer(delegate(Player i)
+						ForEachPlayer(delegate (Player i)
 						{
 							if (i.Initiated)
 							{
@@ -135,15 +124,16 @@ namespace OldyChecked
 						player.Initiated = true;
 					}
 					break;
+
 				case "face":
 					if (player.Initiated)
 					{
 						if (message.Count == 1)
 						{
 							int id = 0;
-							if (Int32.TryParse(message[0].ToString(), out id))
+							if (int.TryParse(message[0].ToString(), out id))
 							{
-								if (id >= cnf.MinSmilies && id <= cnf.MaxSmilies)
+								if (id >= Config.MinSmilies && id <= Config.MaxSmilies)
 								{
 									player.Face = id;
 									BroadcastJoined("face", player.Id, id);
@@ -152,6 +142,7 @@ namespace OldyChecked
 						}
 					}
 					break;
+
 				case "update":
 					if (player.Initiated)
 					{
@@ -161,7 +152,7 @@ namespace OldyChecked
 							bool Successful = true;
 							for (uint i = 0; i <= 7; i++)
 							{
-								if (!Double.TryParse(message[i].ToString(), out Args[i]))
+								if (!double.TryParse(message[i].ToString(), out Args[i]))
 								{
 									Successful = false;
 								}
@@ -176,6 +167,7 @@ namespace OldyChecked
 						}
 					}
 					break;
+
 				case "change":
 					if (player.Initiated)
 					{
@@ -184,21 +176,21 @@ namespace OldyChecked
 							int x = 0;
 							int y = 0;
 							int id = 0;
-							if (Int32.TryParse(message[0].ToString(), out x))
+							if (int.TryParse(message[0].ToString(), out x))
 							{
-								if (Int32.TryParse(message[1].ToString(), out y))
+								if (int.TryParse(message[1].ToString(), out y))
 								{
-									if (Int32.TryParse(message[2].ToString(), out id))
+									if (int.TryParse(message[2].ToString(), out id))
 									{
-										if (id >= cnf.MinBlocks && id <= cnf.MaxBlocks)
+										if (id >= Config.MinBlocks && id <= Config.MaxBlocks)
 										{
-											if (x >= 0 && x < cnf.WorldWidth)
+											if (x >= 0 && x < Config.WorldWidth)
 											{
-												if (y >= 0 && y < cnf.WorldHeight)
+												if (y >= 0 && y < Config.WorldHeight)
 												{
 													if (id <= 4)
 													{
-														if (x >= 1 && y >= 1 && x <= cnf.WorldHeight - 2 && y <= cnf.WorldHeight - 2)
+														if (x >= 1 && y >= 1 && x <= Config.WorldHeight - 2 && y <= Config.WorldHeight - 2)
 														{
 															BroadcastJoined("change", x, y, id);
 															World[x, y] = id;

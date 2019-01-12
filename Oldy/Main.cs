@@ -1,9 +1,7 @@
 ﻿using PlayerIO.GameLibrary;
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 //OldyChecked fixes some of the mistakes that the original Old EE gamecode didn't fix.
 
@@ -23,20 +21,19 @@ namespace OldyChecked
 	/// </summary>
 	public class Config
 	{
-		public int MaxSmilies = 5;
-		public int MinSmilies = 0;
+		public const int MinSmilies = 0;
+		public const int MaxSmilies = 5;
 
-		public int WorldWidth = 100;
-		public int WorldHeight = 100;
+		public const int WorldWidth = 100;
+		public const int WorldHeight = 100;
 
-		public int MaxBlocks = 20;
-		public int MinBlocks = 0;
+		public const int MinBlocks = 0;
+		public const int MaxBlocks = 20;
 	}
 
-	[RoomType("FlixelWalker1")]
+	[RoomType(@"FlixelWalker1")]
 	public class FlixelWalker1 : Game<Player>
 	{
-		public Config cnf;
 		public int[,] World;
 		public bool Loaded = false;
 
@@ -46,7 +43,7 @@ namespace OldyChecked
 		/// <param name="e"></param>
 		private void BroadcastJoined(Message e)
 		{
-			ForEachPlayer(delegate(Player i)
+			ForEachPlayer(delegate (Player i)
 			{
 				if (i.Initiated)
 				{
@@ -55,10 +52,7 @@ namespace OldyChecked
 			});
 		}
 
-		private void BroadcastJoined(string bas, params object[] pms)
-		{
-			BroadcastJoined(Message.Create(bas, pms));
-		}
+		private void BroadcastJoined(string bas, params object[] pms) => BroadcastJoined(Message.Create(bas, pms));
 
 		/// <summary>
 		/// We only want to send messages to the players who are bots
@@ -66,7 +60,7 @@ namespace OldyChecked
 		/// <param name="e"></param>
 		private void BroadcastBot(Message e)
 		{
-			ForEachPlayer(delegate(Player i)
+			ForEachPlayer(delegate (Player i)
 			{
 				if (i.Bot)
 				{
@@ -75,25 +69,22 @@ namespace OldyChecked
 			});
 		}
 
-		private void BroadcastBot(string bas, params object[] pms)
-		{
-			BroadcastBot(Message.Create(bas, pms));
-		}
+		private void BroadcastBot(string bas, params object[] pms) => BroadcastBot(Message.Create(bas, pms));
 
 		private string Serialize()
 		{
 			StringBuilder Serialize = new StringBuilder("");
 
 			//Serialize the world data
-			for (int y = 0; y < cnf.WorldHeight; y++)
+			for (int y = 0; y < Config.WorldHeight; y++)
 			{
 				Serialize.Append(World[0, y].ToString());
-				for (int x = 1; x < cnf.WorldWidth; x++)
+				for (int x = 1; x < Config.WorldWidth; x++)
 				{
 					Serialize.Append(",");
 					Serialize.Append(World[x, y].ToString());
 				}
-				if (y != cnf.WorldHeight - 1)
+				if (y != Config.WorldHeight - 1)
 				{
 					Serialize.Append("\n");
 				}
@@ -106,15 +97,15 @@ namespace OldyChecked
 			StringBuilder Serialize = new StringBuilder("");
 
 			//Serialize the world data
-			for (int y = 0; y < cnf.WorldHeight; y++)
+			for (int y = 0; y < Config.WorldHeight; y++)
 			{
 				Serialize.Append(WorldData[0, y].ToString());
-				for (int x = 1; x < cnf.WorldWidth; x++)
+				for (int x = 1; x < Config.WorldWidth; x++)
 				{
 					Serialize.Append(",");
 					Serialize.Append(WorldData[x, y].ToString());
 				}
-				if (y != cnf.WorldHeight - 1)
+				if (y != Config.WorldHeight - 1)
 				{
 					Serialize.Append("\n");
 				}
@@ -130,14 +121,14 @@ namespace OldyChecked
 			cnf = new Config();
 			//We don't check if it's 0x0 or 8x5
 
-			World = new int[cnf.WorldWidth, cnf.WorldHeight];
+			World = new int[Config.WorldWidth, Config.WorldHeight];
 
-			for (int x = 0; x < cnf.WorldWidth; x++)
+			for (int x = 0; x < Config.WorldWidth; x++)
 			{
-				for (int y = 0; y < cnf.WorldHeight; y++)
+				for (int y = 0; y < Config.WorldHeight; y++)
 				{
-					if ((x == 0 || x == cnf.WorldWidth - 1)
-						|| (y == 0 || y == cnf.WorldHeight - 1))
+					if ((x == 0 || x == Config.WorldWidth - 1)
+						|| (y == 0 || y == Config.WorldHeight - 1))
 					{
 						World[x, y] = 5;
 					}
@@ -148,13 +139,13 @@ namespace OldyChecked
 				}
 			}
 
-			PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate(DatabaseObject i)
+			PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate (DatabaseObject i)
 			{
 				if (i.Contains("width") && i.Contains("height") && i.Contains("data"))
 				{
 					World = new int[i.GetInt("width"), i.GetInt("height")];
-					cnf.WorldWidth = i.GetInt("width");
-					cnf.WorldHeight = i.GetInt("height");
+					Config.WorldWidth = i.GetInt("width");
+					Config.WorldHeight = i.GetInt("height");
 
 					int X = 0, Y = 0;
 					string[] RoomData = i.GetString("data").Replace("\r", "").Split('X');
@@ -169,9 +160,8 @@ namespace OldyChecked
 						Y++;
 					}
 				}
-			}, delegate(PlayerIOError i)
+			}, delegate (PlayerIOError i)
 			{
-
 			});
 			Loaded = true;
 			base.GameStarted();
@@ -181,11 +171,11 @@ namespace OldyChecked
 		{
 			//Serialize the world than save it to the BigDb
 			string Save = Serialize().Replace('\n', 'X');
-			PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate(DatabaseObject i)
+			PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate (DatabaseObject i)
 			{
 				i.Set("data", Save);
-				i.Set("width", cnf.WorldWidth);
-				i.Set("height", cnf.WorldHeight);
+				i.Set("width", Config.WorldWidth);
+				i.Set("height", Config.WorldHeight);
 				i.Save();
 			});
 			base.GameClosed();
@@ -193,13 +183,12 @@ namespace OldyChecked
 
 		public override void UserJoined(Player player)
 		{
-			while(!Loaded)
+			while (!Loaded)
 			{
-
 			}
-			PlayerIO.BigDB.LoadOrCreate("SaveData", player.IPAddress.ToString(), delegate(DatabaseObject i)
+			PlayerIO.BigDB.LoadOrCreate("SaveData", player.IPAddress.ToString(), delegate (DatabaseObject i)
 			{
-				if(!i.Contains("face"))
+				if (!i.Contains("face"))
 				{
 					int Zero = 0;
 					i.Set("face", Zero);
@@ -216,7 +205,7 @@ namespace OldyChecked
 		public override void UserLeft(Player player)
 		{
 			Broadcast("left", player.Id);
-			PlayerIO.BigDB.LoadOrCreate("SaveData", player.IPAddress.ToString(), delegate(DatabaseObject i)
+			PlayerIO.BigDB.LoadOrCreate("SaveData", player.IPAddress.ToString(), delegate (DatabaseObject i)
 			{
 				i.Set("face", player.Face);
 				i.Save();
@@ -229,31 +218,31 @@ namespace OldyChecked
 			switch (message.Type)
 			{
 				case "bot":
-					if(player.Initiated)
+					if (player.Initiated)
 					{
 						player.Bot = true;
 					}
 					break;
+
 				case "init":
 					if (!player.Initiated)
 					{
-						while(!Loaded)
+						while (!Loaded)
 						{
-
 						}
 
 						//Different code for the first player joining
 						if (player.Id == 0)
 						{
-							PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate(DatabaseObject i)
+							PlayerIO.BigDB.LoadOrCreate("Worlds", RoomId, delegate (DatabaseObject i)
 							{
 								if (i.GetString("data") != Serialize())
 								{
 									if (i.Contains("width") && i.Contains("height") && i.Contains("data"))
 									{
 										World = new int[i.GetInt("width"), i.GetInt("height")];
-										cnf.WorldWidth = i.GetInt("width");
-										cnf.WorldHeight = i.GetInt("height");
+										Config.WorldWidth = i.GetInt("width");
+										Config.WorldHeight = i.GetInt("height");
 
 										int X = 0, Y = 0;
 										string[] RoomData = i.GetString("data").Replace("\r", "").Split('X');
@@ -275,7 +264,7 @@ namespace OldyChecked
 										player.Send("change", 0, 0, 4);
 									}
 								}
-							}, delegate(PlayerIOError i)
+							}, delegate (PlayerIOError i)
 							{
 								player.Send("init", Serialize(), player.Id);
 							});
@@ -284,7 +273,7 @@ namespace OldyChecked
 						{
 							BroadcastJoined("add", player.Id, player.Face, 16, 16);
 							player.Send("init", Serialize(), player.Id);
-							ForEachPlayer(delegate(Player i)
+							ForEachPlayer(delegate (Player i)
 							{
 								if (i.Initiated)
 								{
@@ -296,15 +285,16 @@ namespace OldyChecked
 						player.Initiated = true;
 					}
 					break;
+
 				case "face":
 					if (player.Initiated)
 					{
 						if (message.Count == 1)
 						{
 							int id = 0;
-							if (Int32.TryParse(message[0].ToString(), out id))
+							if (int.TryParse(message[0].ToString(), out id))
 							{
-								if (id >= cnf.MinSmilies && id <= cnf.MaxSmilies)
+								if (id >= Config.MinSmilies && id <= Config.MaxSmilies)
 								{
 									player.Face = id;
 									BroadcastJoined("face", player.Id, id);
@@ -313,6 +303,7 @@ namespace OldyChecked
 						}
 					}
 					break;
+
 				case "update":
 					if (player.Initiated)
 					{
@@ -322,7 +313,7 @@ namespace OldyChecked
 							bool Successful = true;
 							for (uint i = 0; i <= 7; i++)
 							{
-								if (!Double.TryParse(message[i].ToString(), out Args[i]))
+								if (!double.TryParse(message[i].ToString(), out Args[i]))
 								{
 									Successful = false;
 								}
@@ -337,6 +328,7 @@ namespace OldyChecked
 						}
 					}
 					break;
+
 				case "change":
 					if (player.Initiated)
 					{
@@ -345,23 +337,23 @@ namespace OldyChecked
 							int x = 0;
 							int y = 0;
 							int id = 0;
-							if (Int32.TryParse(message[0].ToString(), out x))
+							if (int.TryParse(message[0].ToString(), out x))
 							{
-								if (Int32.TryParse(message[1].ToString(), out y))
+								if (int.TryParse(message[1].ToString(), out y))
 								{
-									if (Int32.TryParse(message[2].ToString(), out id))
+									if (int.TryParse(message[2].ToString(), out id))
 									{
 										if (World[x, y] != id)
 										{
-											if (id >= cnf.MinBlocks && id <= cnf.MaxBlocks)
+											if (id >= Config.MinBlocks && id <= Config.MaxBlocks)
 											{
-												if (x >= 0 && x < cnf.WorldWidth)
+												if (x >= 0 && x < Config.WorldWidth)
 												{
-													if (y >= 0 && y < cnf.WorldHeight)
+													if (y >= 0 && y < Config.WorldHeight)
 													{
 														if (id <= 4)
 														{
-															if (x >= 1 && y >= 1 && x <= cnf.WorldHeight - 2 && y <= cnf.WorldHeight - 2)
+															if (x >= 1 && y >= 1 && x <= Config.WorldHeight - 2 && y <= Config.WorldHeight - 2)
 															{
 																BroadcastJoined("change", x, y, id);
 																World[x, y] = id;
@@ -382,8 +374,9 @@ namespace OldyChecked
 						}
 					}
 					break;
+
 				case "c":
-					if(message.Count == 1)
+					if (message.Count == 1)
 					{
 						if (player.Bot)
 						{
